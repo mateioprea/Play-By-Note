@@ -13,13 +13,14 @@ import android.view.View;
 import android.widget.Button;
 import android.graphics.*;
 import android.widget.TextView;
+import android.view.View.OnClickListener;
 
 import java.io.IOException;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-public class RecordActivity extends ActionBarActivity {
+public class RecordActivity extends ActionBarActivity implements OnClickListener{
     private static final String LOG_TAG = "AudioRecord" ;
     private Button start;
     private Button stop;
@@ -30,8 +31,9 @@ public class RecordActivity extends ActionBarActivity {
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
     int blockSize = 256;
     private String mFileName;
-    public boolean started = false;
+    public boolean started = true;
 
+    @Override
     protected void onCreate(Bundle savedInstanceState) {
         super.onCreate(savedInstanceState);
         setContentView(R.layout.activity_record);
@@ -39,22 +41,7 @@ public class RecordActivity extends ActionBarActivity {
         stop=(Button)findViewById(R.id.stop_button);
         analysing = (TextView)findViewById(R.id.analysing);
         analysing.setVisibility(View.GONE);
-        start.setOnClickListener(new View.OnClickListener() {
-            @Override
-            public void onClick(View v) {
-                if(started){
-                    started = false;
-                    start.setText("Stop");
-                    stopRecording();
-                }else{
-                    start.setText("Start");
-                    started = true;
-                    buildFileName();
-                    startRecording();
-                }
-            }
-        });
-
+        start.setOnClickListener(this);
     }
 
     private void buildFileName(){
@@ -64,6 +51,7 @@ public class RecordActivity extends ActionBarActivity {
     }
 
     private void startRecording() {
+
         int bufferSize = AudioRecord.getMinBufferSize(frequency,
                 channelConfiguration, audioEncoding);
         audioRecord = new AudioRecord(
@@ -71,7 +59,10 @@ public class RecordActivity extends ActionBarActivity {
                 channelConfiguration, audioEncoding, bufferSize);
 
         audioRecord.startRecording();
+
+        System.out.println(audioRecord.getState());
         analysing.setVisibility(View.VISIBLE);
+        //System.out.println(started);
             while(started){
                 short[] buffer = new short[blockSize];
                 double[] toTransform = new double[blockSize];
@@ -80,13 +71,15 @@ public class RecordActivity extends ActionBarActivity {
                 for (int i = 0; i < blockSize && i < bufferReadResult; i++) {
                     toTransform[i] = (double) buffer[i] / 32768.0; // signed
                     // 16
-                    System.out.println(toTransform[i]);
+                    //System.out.println(toTransform[i]);
                 }
             }
 
     }
     private void stopRecording(){
+        analysing.setVisibility(View.GONE);
         audioRecord.stop();
+        System.out.println(audioRecord.getState());
     }
     private void readAudio(){
 
@@ -117,5 +110,16 @@ public class RecordActivity extends ActionBarActivity {
         }
 
         return super.onOptionsItemSelected(item);
+    }
+
+    public void onClick(View arg0){
+        System.out.println(started);
+        if(started){
+            started = false;
+            startRecording();
+        }else{
+            started = true;
+            stopRecording();
+        }
     }
 }
