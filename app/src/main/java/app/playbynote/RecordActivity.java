@@ -30,7 +30,6 @@ public class RecordActivity extends ActionBarActivity implements OnClickListener
     int channelConfiguration = AudioFormat.CHANNEL_CONFIGURATION_MONO;
     int audioEncoding = AudioFormat.ENCODING_PCM_16BIT;
     int blockSize = 256;
-    private String mFileName;
     public boolean started = true;
 
     @Override
@@ -43,11 +42,8 @@ public class RecordActivity extends ActionBarActivity implements OnClickListener
         analysing.setVisibility(View.GONE);
         start.setOnClickListener(this);
     }
-
-    private void buildFileName(){
-        String date = this.getDateTime();
-        mFileName = Environment.getExternalStorageDirectory().getAbsolutePath();
-        mFileName +=  "/" + date.replace('/', '_').replace(':', '_').replace(' ', '_') + "_recording";
+    private void checkValidFrequencies(double[] toTransform){
+        System.out.println(toTransform);
     }
 
     private void startRecording() {
@@ -60,9 +56,9 @@ public class RecordActivity extends ActionBarActivity implements OnClickListener
 
         audioRecord.startRecording();
 
-        System.out.println(audioRecord.getState());
         analysing.setVisibility(View.VISIBLE);
-        //System.out.println(started);
+        start.setText("Recording...");
+        System.out.println(started);
             while(started){
                 short[] buffer = new short[blockSize];
                 double[] toTransform = new double[blockSize];
@@ -78,8 +74,8 @@ public class RecordActivity extends ActionBarActivity implements OnClickListener
     }
     private void stopRecording(){
         analysing.setVisibility(View.GONE);
+        start.setText("Record");
         audioRecord.stop();
-        System.out.println(audioRecord.getState());
     }
     private void readAudio(){
 
@@ -115,8 +111,8 @@ public class RecordActivity extends ActionBarActivity implements OnClickListener
     public void onClick(View arg0){
         System.out.println(started);
         if(started){
-            started = false;
             startRecording();
+            started = false;
         }else{
             started = true;
             stopRecording();
